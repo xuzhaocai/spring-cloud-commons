@@ -69,6 +69,8 @@ public class LoadBalancerAutoConfiguration {
 	@Autowired(required = false)
 	private List<LoadBalancerRequestTransformer> transformers = Collections.emptyList();
 
+
+	//RequestFactory
 	@Bean
 	@ConditionalOnMissingBean
 	public LoadBalancerRequestFactory loadBalancerRequestFactory(
@@ -79,10 +81,20 @@ public class LoadBalancerAutoConfiguration {
 	@Configuration
 	@ConditionalOnMissingClass("org.springframework.retry.support.RetryTemplate")
 	static class LoadBalancerInterceptorConfig {
+
+
+		/**
+		 *
+		 * @param loadBalancerClient
+		 * @param requestFactory
+		 * @return
+		 */
 		@Bean
 		public LoadBalancerInterceptor ribbonInterceptor(
 				LoadBalancerClient loadBalancerClient,
 				LoadBalancerRequestFactory requestFactory) {
+
+
 			return new LoadBalancerInterceptor(loadBalancerClient, requestFactory);
 		}
 

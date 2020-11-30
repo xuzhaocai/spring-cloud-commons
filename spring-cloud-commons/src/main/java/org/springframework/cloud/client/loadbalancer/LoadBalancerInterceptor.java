@@ -30,6 +30,11 @@ import org.springframework.util.Assert;
  * @author Dave Syer
  * @author Ryan Baxter
  * @author William Tran
+ *
+ *
+ *
+ *
+ * loadBalancer拦截器
  */
 public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
 
@@ -46,12 +51,27 @@ public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
 		this(loadBalancer, new LoadBalancerRequestFactory(loadBalancer));
 	}
 
+	/**
+	 * 进行拦截
+	 * @param request 请求
+	 * @param body   内容
+	 * @param execution  执行器，这个应该是最终执行的
+	 * @return
+	 * @throws IOException
+	 */
 	@Override
 	public ClientHttpResponse intercept(final HttpRequest request, final byte[] body,
 			final ClientHttpRequestExecution execution) throws IOException {
+
+		// 获取uri
 		final URI originalUri = request.getURI();
+
+		// 获取服务名
 		String serviceName = originalUri.getHost();
 		Assert.state(serviceName != null, "Request URI does not contain a valid hostname: " + originalUri);
+
+
+		// 交给LoadBalancerClient 处理具体的逻辑
 		return this.loadBalancer.execute(serviceName, requestFactory.createRequest(request, body, execution));
 	}
 }

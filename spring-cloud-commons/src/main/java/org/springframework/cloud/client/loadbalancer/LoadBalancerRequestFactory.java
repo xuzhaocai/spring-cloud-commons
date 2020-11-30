@@ -47,6 +47,9 @@ public class LoadBalancerRequestFactory {
 		this.loadBalancer = loadBalancer;
 	}
 
+
+
+	/// 创建LoadBalancerRequest
 	public LoadBalancerRequest<ClientHttpResponse> createRequest(final HttpRequest request,
 			final byte[] body, final ClientHttpRequestExecution execution) {
 		return new LoadBalancerRequest<ClientHttpResponse>() {
@@ -54,9 +57,14 @@ public class LoadBalancerRequestFactory {
 			@Override
 			public ClientHttpResponse apply(final ServiceInstance instance)
 					throws Exception {
+
+
+				// 包装了一层
 				HttpRequest serviceRequest = new ServiceRequestWrapper(request, instance, loadBalancer);
 				if (transformers != null) {
 					for (LoadBalancerRequestTransformer transformer : transformers) {
+
+						///转换成serviceRequest
 						serviceRequest = transformer.transformRequest(serviceRequest, instance);
 					}
 				}

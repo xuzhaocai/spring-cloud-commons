@@ -19,9 +19,11 @@ public class ServiceRequestWrapper extends HttpRequestWrapper {
 		this.instance = instance;
 		this.loadBalancer = loadBalancer;
 	}
-
+	///重写getURI方法
 	@Override
 	public URI getURI() {
+
+		/// 调用loadbalancer的 重组uri方法
 		URI uri = this.loadBalancer.reconstructURI(
 				this.instance, getRequest().getURI());
 		return uri;

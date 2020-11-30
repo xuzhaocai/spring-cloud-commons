@@ -34,7 +34,7 @@ public abstract class NamedContextFactory<C extends NamedContextFactory.Specific
 
 		Class<?>[] getConfiguration();
 	}
-
+	// 缓存了context        服务名---》context实例
 	private Map<String, AnnotationConfigApplicationContext> contexts = new ConcurrentHashMap<>();
 
 	private Map<String, C> configurations = new ConcurrentHashMap<>();
@@ -78,10 +78,17 @@ public abstract class NamedContextFactory<C extends NamedContextFactory.Specific
 		this.contexts.clear();
 	}
 
+	/**
+	 * 根据name 获取对应的context
+	 * @param name
+	 * @return
+	 */
 	protected AnnotationConfigApplicationContext getContext(String name) {
 		if (!this.contexts.containsKey(name)) {
 			synchronized (this.contexts) {
 				if (!this.contexts.containsKey(name)) {
+
+					//如果不存在，创建对应的context
 					this.contexts.put(name, createContext(name));
 				}
 			}
@@ -89,6 +96,12 @@ public abstract class NamedContextFactory<C extends NamedContextFactory.Specific
 		return this.contexts.get(name);
 	}
 
+
+	/**
+	 * 创建context
+	 * @param name
+	 * @return
+	 */
 	protected AnnotationConfigApplicationContext createContext(String name) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		if (this.configurations.containsKey(name)) {
@@ -100,12 +113,14 @@ public abstract class NamedContextFactory<C extends NamedContextFactory.Specific
 		for (Map.Entry<String, C> entry : this.configurations.entrySet()) {
 			if (entry.getKey().startsWith("default.")) {
 				for (Class<?> configuration : entry.getValue().getConfiguration()) {
-					context.register(configuration);
+					context.register(configuration);// 注册configuration
 				}
 			}
 		}
 		context.register(PropertyPlaceholderAutoConfiguration.class,
 				this.defaultConfigType);
+
+
 		context.getEnvironment().getPropertySources().addFirst(new MapPropertySource(
 				this.propertySourceName,
 				Collections.<String, Object> singletonMap(this.propertyName, name)));
@@ -118,6 +133,8 @@ public abstract class NamedContextFactory<C extends NamedContextFactory.Specific
 	}
 
 	public <T> T getInstance(String name, Class<T> type) {
+
+		// 获取context ，没有就创建
 		AnnotationConfigApplicationContext context = getContext(name);
 		if (BeanFactoryUtils.beanNamesForTypeIncludingAncestors(context,
 				type).length > 0) {
